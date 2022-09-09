@@ -8,9 +8,9 @@ spec:
   source:
     binary: {}
     type: Binary
-  strategy:
-    forcePull: true
+  strategy:    
     customStrategy:
+      forcePull: true
       env:
       - name: NAME_PREFIX
         value: build-deploy-go
@@ -39,7 +39,7 @@ spec:
       - name: FILES
         value: "[\"./deploy/helm/app/values-build.yaml\", \"./deploy/helm/app/values-dev.yaml\"]"
       - name: APPLICATION_NAMES
-        value: "hr-echo-dev hr-echo-build"
+        value: "[\"hr-echo-dev\", \"hr-echo-build\"]"
       - name: SHARED_WORKSPACE_PVC_NAME
         value: source-pvc
       - name: MONOREPO_WORKSPACE_PVC_NAME
