@@ -1,6 +1,6 @@
 # gitops-example-monorepo-go
 
-An example infrastructure as code (IAC) monorepo to house gitops, pipeline, and deployment source code used to build and deploy an example go application.
+An example infrastructure as code (IAC) monorepo to house gitops, pipeline, and deployment source code used to build and deploy an [example go application](https://github.com/trevorbox/s2i/tree/master/go).
 
 ## setup
 
@@ -47,6 +47,8 @@ helm upgrade -i cicd setup/helm/argocd/ -n ${argo_namespace} --create-namespace
 
 ## deploy rootapp
 
+![ArgoCD Root Application](.pics/argocd-rootapp.png)
+
 ```sh
 # dev cluster rootapp
 helm upgrade -i rootapp argocd/helm/rootapp/ -n ${argo_namespace} \
@@ -66,6 +68,8 @@ helm upgrade -i rootapp argocd/helm/rootapp/ -n ${argo_namespace} \
 ```
 
 ## deploy build pipeline
+
+![Pipeline Build and Deploy](.pics/pipeline-build-and-deploy.png)
 
 ```sh
 export build_namespace=${org}-${context}-build
@@ -98,6 +102,8 @@ helm upgrade -i build-image-util image-util/helm/build -n ${build_namespace}
 We can use a BuildConfig to run a custom script baked into a custom image to create PiplelineRuns whenever a builder or base ImageStreamTag (IST) imports new latest images (scheduled every 15 minutes by default).
 
 See [Image Change Triggers for Tekton](https://labs.consol.de/development/kubernetes/openshift/2022/03/14/image-change-triggers-for-tekton.html) for more details on this concept.
+
+![BuildConfig Tekton Image Change Trigger](.pics/tekton-image-change-trigger.png)
 
 ### build pipelinerun on image change
 
