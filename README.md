@@ -95,7 +95,6 @@ oc apply -f pipelines/pipelinerun/pipelinerun-build-deploy-go.yaml -n ${build_na
 
 ```sh
 helm upgrade -i build-pipelinerun-imagechange-go-app pipelinerun/pipelinerun-imagechange-go-app/helm/build -n ${build_namespace}
-helm delete build-pipelinerun-imagechange-go-app -n ${build_namespace}
 ```
 
 > Note: make the image publicly accessible in quay.io
@@ -106,14 +105,13 @@ helm delete build-pipelinerun-imagechange-go-app -n ${build_namespace}
 
 ```sh
 helm upgrade -i deploy-pipelinerun-imagechange-go-app pipelinerun/pipelinerun-imagechange-go-app/helm/deploy -n ${build_namespace}
-helm delete deploy-pipelinerun-imagechange-go-app -n ${build_namespace}
 ```
 
 ## cleanup
 
 ```sh
-helm delete build-base-image-trigger -n ${build_namespace}
-helm delete base-image-trigger -n ${build_namespace}
+helm delete build-pipelinerun-imagechange-go-app -n ${build_namespace}
+helm delete deploy-pipelinerun-imagechange-go-app -n ${build_namespace}
 helm delete go-build-and-deploy -n ${build_namespace}
 
 helm delete rootapp -n ${argo_namespace}
