@@ -65,7 +65,7 @@ helm upgrade -i rootapp argocd/helm/rootapp/ -n ${argo_namespace} \
   -f argocd/helm/rootapp/values-cluster-prod.yaml
 ```
 
-## build pipeline
+## deploy build pipeline
 
 ```sh
 export build_namespace=${org}-${context}-build
@@ -83,13 +83,9 @@ helm upgrade -i build-and-deploy-go-app-pipeline pipelines/helm/build -n ${build
   --create-namespace
 ```
 
-### manual run
-
-```sh
-oc apply -f pipelines/pipelinerun/pipelinerun-build-deploy-go.yaml -n ${build_namespace}
-```
-
 ## build image-util
+
+> Note: make the image publicly accessible in quay.io after it is pushed (if needed)
 
 ```sh
 helm upgrade -i build-image-util image-util/helm/build -n ${build_namespace}
@@ -99,18 +95,24 @@ helm upgrade -i build-image-util image-util/helm/build -n ${build_namespace}
 
 ### build the trigger pipelinerun image
 
+> Note: make the image publicly accessible in quay.io after it is pushed (if needed)
+
 ```sh
 helm upgrade -i build-pipelinerun-imagechange-go-app pipelinerun-imagechange-go-app/helm/build -n ${build_namespace}
 ```
 
-> Note: make the image publicly accessible in quay.io
-
-### deploy the trigger
+### deploy the trigger to build from base image changes
 
 > Note: The BuildConfig is configured to trigger whenever the builder or base ImageStreamTags import new latest images (scheduled every 15 minutes by default).
 
 ```sh
 helm upgrade -i deploy-pipelinerun-imagechange-go-app pipelinerun-imagechange-go-app/helm/deploy -n ${build_namespace}
+```
+
+## manual pipelinerun
+
+```sh
+oc apply -f pipelines/pipelinerun-build-deploy-go-app.yaml -n ${build_namespace}
 ```
 
 ## cleanup

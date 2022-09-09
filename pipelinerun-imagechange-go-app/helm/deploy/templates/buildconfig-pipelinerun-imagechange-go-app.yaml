@@ -13,7 +13,7 @@ spec:
       forcePull: true
       env:
       - name: NAME_PREFIX
-        value: build-deploy-go
+        value: build-deploy-go-app
       - name: GIT_URL
         value: git@github.com:trevorbox/s2i.git
       - name: GIT_REVISION
