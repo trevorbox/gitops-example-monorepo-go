@@ -72,6 +72,7 @@ export build_namespace=${org}-${context}-build
 ```
 
 ```sh
+podman login quay.io
 helm upgrade -i go-build-and-deploy pipelines/helm/build -n ${build_namespace} \
   --set-file quay.dockerconfigjson=${XDG_RUNTIME_DIR}/containers/auth.json \
   --set-file github.ssh.id_rsa=${HOME}/.ssh/tkn/id_ed25519 \
@@ -93,7 +94,7 @@ oc apply -f pipelines/pipelinerun/pipelinerun-build-deploy-go.yaml -n ${build_na
 ### build the trigger pipelinerun image
 
 ```sh
-helm upgrade -i build-base-image-trigger pipelines/helm/build-base-image-trigger -n ${build_namespace}
+helm upgrade -i build-pipelinerun-imagechange-go-app pipelinerun/pipelinerun-imagechange-go-app/helm/build -n ${build_namespace}
 ```
 
 ### deploy the trigger
