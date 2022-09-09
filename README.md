@@ -73,7 +73,7 @@ export build_namespace=${org}-${context}-build
 
 ```sh
 podman login quay.io
-helm upgrade -i go-build-and-deploy pipelines/helm/build -n ${build_namespace} \
+helm upgrade -i build-and-deploy-go-app-pipeline pipelines/helm/build -n ${build_namespace} \
   --set-file quay.dockerconfigjson=${XDG_RUNTIME_DIR}/containers/auth.json \
   --set-file github.ssh.id_rsa=${HOME}/.ssh/tkn/id_ed25519 \
   --set-file github.ssh.known_hosts=${HOME}/.ssh/known_hosts \
@@ -89,12 +89,18 @@ helm upgrade -i go-build-and-deploy pipelines/helm/build -n ${build_namespace} \
 oc apply -f pipelines/pipelinerun/pipelinerun-build-deploy-go.yaml -n ${build_namespace}
 ```
 
+## build image-util
+
+```sh
+helm upgrade -i build-image-util image-util/helm/build -n ${build_namespace}
+```
+
 ## build from base image change
 
 ### build the trigger pipelinerun image
 
 ```sh
-helm upgrade -i build-pipelinerun-imagechange-go-app pipelinerun/pipelinerun-imagechange-go-app/helm/build -n ${build_namespace}
+helm upgrade -i build-pipelinerun-imagechange-go-app pipelinerun-imagechange-go-app/helm/build -n ${build_namespace}
 ```
 
 > Note: make the image publicly accessible in quay.io
@@ -104,15 +110,16 @@ helm upgrade -i build-pipelinerun-imagechange-go-app pipelinerun/pipelinerun-ima
 > Note: The BuildConfig is configured to trigger whenever the builder or base ImageStreamTags import new latest images (scheduled every 15 minutes by default).
 
 ```sh
-helm upgrade -i deploy-pipelinerun-imagechange-go-app pipelinerun/pipelinerun-imagechange-go-app/helm/deploy -n ${build_namespace}
+helm upgrade -i deploy-pipelinerun-imagechange-go-app pipelinerun-imagechange-go-app/helm/deploy -n ${build_namespace}
 ```
 
 ## cleanup
 
 ```sh
+helm delete build-image-util -n ${build_namespace}
 helm delete build-pipelinerun-imagechange-go-app -n ${build_namespace}
 helm delete deploy-pipelinerun-imagechange-go-app -n ${build_namespace}
-helm delete go-build-and-deploy -n ${build_namespace}
+helm delete build-and-deploy-go-app-pipeline -n ${build_namespace}
 
 helm delete rootapp -n ${argo_namespace}
 for i in "${envs[@]}"; do ns=${org}-${context}-${i} && oc delete project ${ns}; done

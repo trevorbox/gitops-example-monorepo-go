@@ -1,21 +1,21 @@
 kind: BuildConfig
 apiVersion: build.openshift.io/v1
 metadata:
-  name: build-pipelinerun-imagechange-go-app
+  name: build-image-util
   labels:
-    app: build-pipelinerun-imagechange-go-app
+    app: build-image-util
 spec:
   output:
     to:
       kind: DockerImage
-      name: "quay.io/trevorbox/pipelinerun-imagechange-go-app:latest"
+      name: "quay.io/trevorbox/image-util:latest"
     pushSecret:
       name: quay-push-creds
     imageLabels:
     - name: org.opencontainers.image.title
-      value: pipelinerun-imagechange-go-app
+      value: image-util
     - name: org.opencontainers.image.description
-      value: "An image to create a new PipelineRun when latest builder or base images are updated"
+      value: "A utility used in the pipeline to inspect the next semver from remote registries, yq replace files in a monorepo and setup variables"
     - name: org.opencontainers.image.source
       value: "https://github.com/trevorbox/gitops-example-monorepo-go.git"
     - name: org.opencontainers.image.revision
@@ -38,7 +38,7 @@ spec:
     type: Git
     git:
       uri: 'https://github.com/trevorbox/gitops-example-monorepo-go.git'
-    contextDir: pipelinerun/pipelinerun-imagechange-go-app
+    contextDir: image-util
   runPolicy: Serial
   triggers:
     - type: ConfigChange
