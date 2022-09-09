@@ -38,7 +38,7 @@ spec:
     type: Git
     git:
       uri: 'https://github.com/trevorbox/gitops-example-monorepo-go.git'
-    contextDir: pipelines/pipelinerun/pipelinerun-imagechange-go-app
+    contextDir: pipelinerun/pipelinerun-imagechange-go-app
   runPolicy: Serial
   triggers:
     - type: ConfigChange

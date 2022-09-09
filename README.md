@@ -95,14 +95,18 @@ oc apply -f pipelines/pipelinerun/pipelinerun-build-deploy-go.yaml -n ${build_na
 
 ```sh
 helm upgrade -i build-pipelinerun-imagechange-go-app pipelinerun/pipelinerun-imagechange-go-app/helm/build -n ${build_namespace}
+helm delete build-pipelinerun-imagechange-go-app -n ${build_namespace}
 ```
+
+> Note: make the image publicly accessible in quay.io
 
 ### deploy the trigger
 
 > Note: The BuildConfig is configured to trigger whenever the builder or base ImageStreamTags import new latest images (scheduled every 15 minutes by default).
 
 ```sh
-helm upgrade -i base-image-trigger pipelines/helm/base-image-trigger -n ${build_namespace}
+helm upgrade -i deploy-pipelinerun-imagechange-go-app pipelinerun/pipelinerun-imagechange-go-app/helm/deploy -n ${build_namespace}
+helm delete deploy-pipelinerun-imagechange-go-app -n ${build_namespace}
 ```
 
 ## cleanup

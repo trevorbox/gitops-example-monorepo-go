@@ -15,6 +15,10 @@ BUILD_API_VERSION=$(echo "$BUILD" | jq -j '.apiVersion')
 BUILD_NAME=$(echo "$BUILD" | jq -j '.metadata.name')
 BUILD_UID=$(echo "$BUILD" | jq -j '.metadata.uid')
 
+FILES_ARR=($FILES)
+APPLICATION_NAMES_ARR=($APPLICATION_NAMES)
+
+
 PR_NAME=$(oc create -f - << __EOF__ | sed 's/pipelinerun\.tekton\.dev\/\(.*\) created/\1/'
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
@@ -54,12 +58,10 @@ spec:
     value: ${MONOREPO_GIT_REVISION}
   - name: files
     value:
-      - "./appofapps/deploy/helm/app/values-build.yaml"
-      - "./appofapps/deploy/helm/app/values-dev.yaml"
+for s in "${FILES_ARR[@]}"; do echo "      - $s"; done;
   - name: application-names
     value:
-      - "hr-echo-dev"
-      - "hr-echo-build"
+for s in "${APPLICATION_NAMES_ARR[@]}"; do echo "      - $s"; done;
   workspaces:
   - name: shared-workspace
     persistentVolumeClaim:

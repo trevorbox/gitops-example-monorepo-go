@@ -35,14 +35,10 @@ spec:
         value: git@github.com:trevorbox/gitops-example-monorepo-go.git
       - name: MONOREPO_GIT_REVISION
         value: main
-      # - name: FILES
-      #   value:
-      #     - "./appofapps/deploy/helm/app/values-build.yaml"
-      #     - "./appofapps/deploy/helm/app/values-dev.yaml"
-      # - name: APPLICATION_NAMES
-      #   value:
-      #     - "hr-echo-dev"
-      #     - "hr-echo-build"
+      - name: FILES
+        value: "./deploy/helm/app/values-build.yaml ./deploy/helm/app/values-dev.yaml"
+      - name: APPLICATION_NAMES
+        value: "hr-echo-dev hr-echo-build"
       - name: SHARED_WORKSPACE_PVC_NAME
         value: source-pvc
       - name: MONOREPO_WORKSPACE_PVC_NAME
