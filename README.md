@@ -45,7 +45,7 @@ example ArgoCD CR spec.rbac snippet:
 helm upgrade -i cicd setup/helm/argocd/ -n ${argo_namespace} --create-namespace
 ```
 
-## deploy
+## deploy rootapp
 
 ```sh
 # dev cluster rootapp
@@ -85,15 +85,21 @@ helm upgrade -i build-and-deploy-go-app-pipeline pipelines/helm/build -n ${build
 
 ## build image-util
 
+We need to create our own utilitly image for the pipeline to inspect the next semver from remote registries, use the yq tool to update yaml files in a monorepo and setup variables like base/builder image digest values.
+
 > Note: make the image publicly accessible in quay.io after it is pushed (if needed)
 
 ```sh
 helm upgrade -i build-image-util image-util/helm/build -n ${build_namespace}
 ```
 
-## build from base image change
+## pipelinerun on image change
 
-### build the trigger pipelinerun image
+We can use a BuildConfig to run a custom script baked into a custom image to create PiplelineRuns whenever a builder or base ImageStreamTag (IST) imports new latest images (scheduled every 15 minutes by default).
+
+See [Image Change Triggers for Tekton](https://labs.consol.de/development/kubernetes/openshift/2022/03/14/image-change-triggers-for-tekton.html) for more details on this concept.
+
+### build pipelinerun on image change
 
 > Note: make the image publicly accessible in quay.io after it is pushed (if needed)
 
@@ -101,15 +107,13 @@ helm upgrade -i build-image-util image-util/helm/build -n ${build_namespace}
 helm upgrade -i build-pipelinerun-imagechange-go-app pipelinerun-imagechange-go-app/helm/build -n ${build_namespace}
 ```
 
-### deploy the trigger to build from base image changes
-
-> Note: The BuildConfig is configured to trigger whenever the builder or base ImageStreamTags import new latest images (scheduled every 15 minutes by default).
+### deploy pipelinerun on image change
 
 ```sh
 helm upgrade -i deploy-pipelinerun-imagechange-go-app pipelinerun-imagechange-go-app/helm/deploy -n ${build_namespace}
 ```
 
-## manual pipelinerun
+## manually create a pipelinerun
 
 ```sh
 oc apply -f pipelines/pipelinerun-build-deploy-go-app.yaml -n ${build_namespace}
@@ -122,6 +126,7 @@ helm delete build-image-util -n ${build_namespace}
 helm delete build-pipelinerun-imagechange-go-app -n ${build_namespace}
 helm delete deploy-pipelinerun-imagechange-go-app -n ${build_namespace}
 helm delete build-and-deploy-go-app-pipeline -n ${build_namespace}
+oc delete -f pipelines/pipelinerun-build-deploy-go-app.yaml -n ${build_namespace}
 
 helm delete rootapp -n ${argo_namespace}
 for i in "${envs[@]}"; do ns=${org}-${context}-${i} && oc delete project ${ns}; done
