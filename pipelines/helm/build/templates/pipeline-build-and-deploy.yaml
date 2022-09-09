@@ -1,0 +1,206 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-and-deploy
+spec:
+  workspaces:
+  - name: shared-workspace
+  - name: monorepo-workspace
+  - name: ssh-creds
+  params:
+  - name: git-url
+    type: string
+    description: url of the git repo for the code of deployment
+  - name: git-revision
+    type: string
+    description: revision to be used from repo of the code for deployment
+    default: master
+  - name: IMAGE
+    type: string
+    description: image to be build from the code
+  - name: CONTEXT
+    type: string
+    description: path to the source code
+  - name: GROUP_EMAIL
+    type: string
+    description: team group email to contact regarding the built image
+  - name: builder-image-repository
+    type: string
+    description: The builder image repository
+  - name: builder-image-tag
+    type: string
+    description: The builder image tag
+  - name: base-image-repository
+    type: string
+    description: The base image repository
+  - name: base-image-tag
+    type: string
+    description: The base image tag
+    default: latest
+  - name: monorepo-git-url
+    type: string
+    description: url of the git repo for the code of the monorepo
+  - name: monorepo-git-revision
+    type: string
+    description: revision to be used from repo of the code of the monorepo
+  - name: files
+    type: array
+    description: A list of files to update using yq in the monorepo
+  - name: application-names
+    type: array
+    description: A list of applications for argocd to sync 
+  tasks:
+  - name: fetch-repository
+    taskRef:
+      name: git-clone
+      kind: ClusterTask
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+    params:
+    - name: url
+      value: $(params.git-url)
+    - name: subdirectory
+      value: ""
+    - name: deleteExisting
+      value: "true"
+    - name: revision
+      value: $(params.git-revision)
+  - name: image-util
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    taskRef:
+      name: image-util
+    params:
+    - name: git-revision
+      value: $(params.git-revision)
+    - name: repository
+      value: $(params.IMAGE)
+    - name: builder-image-repository
+      value: $(params.builder-image-repository)
+    - name: builder-image-tag
+      value: $(params.builder-image-tag)
+    - name: base-image-repository
+      value: $(params.base-image-repository)
+    - name: base-image-tag
+      value: $(params.base-image-tag)
+    runAfter:
+    - fetch-repository
+  - name: build-image
+    taskRef:
+      name: buildah
+      kind: ClusterTask
+    params:
+    - name: IMAGE
+      value: "$(params.IMAGE):v$(tasks.image-util.results.next-prerelease)"
+    - name: CONTEXT
+      value: $(params.CONTEXT)
+    - name: TLSVERIFY
+      value: "false"
+    - name: BUILD_EXTRA_ARGS
+      value: >-
+        --build-arg git_origin_url="$(params.git-url)"
+        --build-arg git_revision="$(tasks.fetch-repository.results.commit)"
+        --build-arg builder_image_repository="$(params.builder-image-repository)"
+        --build-arg builder_image_tag="$(params.builder-image-tag)"
+        --build-arg builder_image_digest="$(tasks.image-util.results.builder-image-digest)"
+        --build-arg base_image_repository="$(params.base-image-repository)"
+        --build-arg base_image_tag="$(params.base-image-tag)"
+        --build-arg base_image_digest="$(tasks.image-util.results.base-image-digest)"
+        --build-arg src_version="$(tasks.image-util.results.release)"
+        --build-arg created="$(tasks.image-util.results.current-datetime-iso8601)"
+        --build-arg author_emails="$(params.GROUP_EMAIL)"
+        --build-arg build_host="$(context.pipelineRun.namespace)/$(context.pipelineRun.name)"
+        --build-arg build_id="$(context.pipelineRun.uid)"
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    runAfter:
+    - image-util
+  - name: push-image
+    taskRef:
+      name: skopeo-copy
+      kind: ClusterTask
+    params:
+    - name: srcImageURL
+      value: "docker://$(params.IMAGE):v$(tasks.image-util.results.next-prerelease)"
+    - name: destImageURL
+      value: "docker://$(params.IMAGE):latest"
+    - name: srcTLSverify
+      value: "false"
+    - name: destTLSverify
+      value: "false"
+    workspaces:
+    - name: images-url
+      workspace: shared-workspace
+    runAfter:
+    - build-image
+  - name: fetch-monorepo
+    taskRef:
+      name: git-clone
+      kind: ClusterTask
+    workspaces:
+    - name: output
+      workspace: monorepo-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+    params:
+      - name: url
+        value: "$(params.monorepo-git-url)"
+      - name: revision
+        value: "$(params.monorepo-git-revision)"
+      - name: subdirectory
+        value: ""
+      - name: deleteExisting
+        value: "true"
+    runAfter:
+    - push-image
+  - name: yq-replace
+    taskRef:
+      name: yq
+    runAfter:
+      - fetch-monorepo
+    workspaces:
+      - name: source
+        workspace: monorepo-workspace
+    params:
+      - name: files
+        value: ["$(params.files[*])"]
+      - name: expression
+        value: (.image.tag="v$(tasks.image-util.results.next-prerelease)"),(.image.repository="$(params.IMAGE)")
+  - name: update-monorepo
+    taskRef:
+      name: git-cli
+      kind: ClusterTask
+    workspaces:
+    - name: source
+      workspace: monorepo-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+    params:
+      - name: GIT_USER_NAME
+        value: trevorbox
+      - name: GIT_USER_EMAIL
+        value: trevorjbox@gmail.com
+      - name: GIT_SCRIPT
+        value: |
+          git commit -am "update-monorepo v$(tasks.image-util.results.next-prerelease)"
+          git push origin HEAD:"$(params.monorepo-git-revision)"
+          chmod -R g+w .git
+    runAfter:
+      - yq-replace
+  - name: sync-application
+    taskRef:
+      name: argocd-sync
+    params:
+      - name: application-names
+        value: ["$(params.application-names[*])"]
+      - name: revision
+        value: "$(params.monorepo-git-revision)"
+      - name: argocd-version
+        value: v2.4.5
+    runAfter:
+      - update-monorepo
