@@ -168,7 +168,7 @@ image:
 useArgoRollout: true
 ```
 
-The Rollout uses a blue/green strategy and runs a smoke-test k8s Job before before allowing the switch-over, if successful.
+The Rollout uses a blue/green strategy and runs a prePromotionAnalysis k8s Job before before allowing the switch-over, if successful.
 
 example successful rollout after pipeline rebuild...
 
@@ -197,7 +197,7 @@ NAME                                                          KIND         STATU
    └──⧉ hr-echo-dev-app-545566945c                            ReplicaSet   • ScaledDown  20m 
 ```
 
-example failure (AnalysisRun Job failure)...
+example failure (AnalysisRun Job failure by changing to the [always-fail](./deploy/helm/app/templates/rollout/analysistemplate-always-fail.yaml) AnalysisTemplate)...
 
 ```sh
 [tbox@fedora gitops-example-monorepo-go]$ kubectl argo rollouts get rollouts hr-echo-dev-app -n hr-echo-dev
