@@ -140,6 +140,59 @@ for i in "${envs[@]}"; do ns=${org}-${context}-${i} && oc delete project ${ns}; 
 
 ## argocd rollouts
 
-```sh
+### argocd rollouts install
 
+To test out cluster-scoped ArgoCD Rollouts use the following to install ...
+
+```sh
+kubectl create namespace argo-rollouts
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
 ```
+
+### argocd rollouts blue/green test
+
+The deployment chart for the application has an optional flag to use ArgoCD Rollouts instead of Deployments. You will need to commit a change to the desired values file in this monorepo's main branch.
+
+for example...
+
+```sh
+[tbox@fedora gitops-example-monorepo-go]$ cat deploy/helm/app/values-dev.yaml 
+image:
+  repository: quay.io/trevorbox/go-app
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v0.1.0-15"
+useArgoRollout: true
+```
+
+The Rollout uses a blue/green strategy and runs a smoke-test k8s Job before before allowing the switch-over, if successful.
+
+example successful rollout after pipeline rebuild...
+
+```sh
+[tbox@fedora gitops-example-monorepo-go]$ kubectl argo rollouts get rollouts hr-echo-dev-app -n hr-echo-dev
+Name:            hr-echo-dev-app
+Namespace:       hr-echo-dev
+Status:          ✔ Healthy
+Strategy:        BlueGreen
+Images:          quay.io/trevorbox/go-app:v0.1.0-16 (stable, active)
+Replicas:
+  Desired:       1
+  Current:       1
+  Updated:       1
+  Ready:         1
+  Available:     1
+
+NAME                                                          KIND         STATUS        AGE  INFO
+⟳ hr-echo-dev-app                                             Rollout      ✔ Healthy     20m  
+├──# revision:2                                                                               
+│  ├──⧉ hr-echo-dev-app-744cf678c8                            ReplicaSet   ✔ Healthy     12m  stable,active
+│  │  └──□ hr-echo-dev-app-744cf678c8-6rz5w                   Pod          ✔ Running     12m  ready:1/1
+│  └──α hr-echo-dev-app-744cf678c8-2-pre                      AnalysisRun  ✔ Successful  12m  ✔ 1
+│     └──⊞ 2a985827-17b3-4c11-a828-791c99fa67cf.smoke-test.1  Job          ✔ Successful  12m  
+└──# revision:1                                                                               
+   └──⧉ hr-echo-dev-app-545566945c                            ReplicaSet   • ScaledDown  20m 
+```
+
+example failure (AnalysisRun Job failure)...
+
+
