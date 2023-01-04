@@ -195,4 +195,32 @@ NAME                                                          KIND         STATU
 
 example failure (AnalysisRun Job failure)...
 
+```sh
+[tbox@fedora gitops-example-monorepo-go]$ kubectl argo rollouts get rollouts hr-echo-dev-app -n hr-echo-dev
+Name:            hr-echo-dev-app
+Namespace:       hr-echo-dev
+Status:          ✖ Degraded
+Message:         RolloutAborted: Rollout aborted update to revision 3: Metric "always-fail" assessed Failed due to failed (1) > failureLimit (0)
+Strategy:        BlueGreen
+Images:          quay.io/trevorbox/go-app:v0.1.0-16 (stable, active)
+Replicas:
+  Desired:       1
+  Current:       1
+  Updated:       0
+  Ready:         1
+  Available:     1
 
+NAME                                                           KIND         STATUS        AGE  INFO
+⟳ hr-echo-dev-app                                              Rollout      ✖ Degraded    47m  
+├──# revision:3                                                                                
+│  ├──⧉ hr-echo-dev-app-7fdc57b8cf                             ReplicaSet   • ScaledDown  20m  preview,delay:passed
+│  └──α hr-echo-dev-app-7fdc57b8cf-3-pre                       AnalysisRun  ✖ Failed      19m  ✖ 1
+│     └──⊞ 9f20f627-4970-4567-9f7d-5a99df04f009.always-fail.1  Job          ✖ Failed      19m  
+├──# revision:2                                                                                
+│  ├──⧉ hr-echo-dev-app-744cf678c8                             ReplicaSet   ✔ Healthy     39m  stable,active
+│  │  └──□ hr-echo-dev-app-744cf678c8-6rz5w                    Pod          ✔ Running     39m  ready:1/1
+│  └──α hr-echo-dev-app-744cf678c8-2-pre                       AnalysisRun  ✔ Successful  39m  ✔ 1
+│     └──⊞ 2a985827-17b3-4c11-a828-791c99fa67cf.smoke-test.1   Job          ✔ Successful  39m  
+└──# revision:1                                                                                
+   └──⧉ hr-echo-dev-app-545566945c                             ReplicaSet   • ScaledDown  47m  
+```
