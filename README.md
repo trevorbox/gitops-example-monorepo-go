@@ -228,3 +228,7 @@ NAME                                                           KIND         STAT
 └──# revision:1                                                                                
    └──⧉ hr-echo-dev-app-545566945c                             ReplicaSet   • ScaledDown  47m  
 ```
+
+The sync step in the pipeline also fails due to degraded Rollout...
+
+![ArgoCD Rollout AnalysisRun Always Fail](.pics/argo-rollouts-analysisrun-always-fail-pipeline.png)
