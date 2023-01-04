@@ -137,3 +137,9 @@ oc delete -f pipelines/pipelinerun-build-deploy-go-app.yaml -n ${build_namespace
 helm delete rootapp -n ${argo_namespace}
 for i in "${envs[@]}"; do ns=${org}-${context}-${i} && oc delete project ${ns}; done
 ```
+
+## argocd rollouts
+
+```sh
+
+```

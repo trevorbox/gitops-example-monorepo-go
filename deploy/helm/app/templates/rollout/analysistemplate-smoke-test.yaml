@@ -1,0 +1,28 @@
+{{- if .Values.useArgoRollout }}
+# This AnalysisTemplate will run a Kubernetes Job every that curls an endpoint.
+kind: AnalysisTemplate
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: smoke-test
+spec:
+  args:
+  - name: service-name
+  # https://pkg.go.dev/github.com/argoproj/argo-rollouts/pkg/apis/rollouts/v1alpha1#Metric
+  metrics:
+  - name: smoke-test
+    provider:
+      job:
+        spec:
+          template:
+            spec:
+              containers:
+              - name: curl
+                image: registry.access.redhat.com/ubi9/ubi-minimal
+                command: 
+                  - sh
+                  - -c
+                args: 
+                  - curl "{{ printf "{{ args.service-name }}" }}"
+              restartPolicy: Never
+          backoffLimit: 0
+{{- end }}

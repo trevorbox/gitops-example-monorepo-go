@@ -1,0 +1,28 @@
+{{- if .Values.useArgoRollout }}
+# This AnalysisTemplate will run a Kubernetes Job that always fails.
+kind: AnalysisTemplate
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: always-fail
+spec:
+  args:
+  - name: service-name
+  # https://pkg.go.dev/github.com/argoproj/argo-rollouts/pkg/apis/rollouts/v1alpha1#Metric
+  metrics:
+  - name: always-fail
+    provider:
+      job:
+        spec:
+          template:
+            spec:
+              containers:
+              - name: fail
+                image: registry.access.redhat.com/ubi9/ubi-minimal
+                command: 
+                  - sh
+                  - -c
+                args: 
+                  - exit 1
+              restartPolicy: Never
+          backoffLimit: 0
+{{- end }}
