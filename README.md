@@ -149,6 +149,10 @@ kubectl create namespace argo-rollouts
 kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
 ```
 
+### argocd rollouts cli plugin install
+
+See <https://argo-rollouts.readthedocs.io/en/stable/installation/#kubectl-plugin-installation>
+
 ### argocd rollouts blue/green test
 
 The deployment chart for the application has an optional flag to use ArgoCD Rollouts instead of Deployments. You will need to commit a change to the desired values file in this monorepo's main branch.
