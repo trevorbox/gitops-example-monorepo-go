@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: hr-echo
+spec:
+  generators:
+    - git:
+        repoURL: 'https://github.com/trevorbox/gitops-example-monorepo-go.git'
+        revision: main
+        files:
+          - path: {{ printf "argocd/clusters/%s/namespaces/*.yaml" .Values.cluster.name }}
+  template:
+    metadata:
+      name: >-
+        {{ printf "hr-echo-{{env}}" }}
+    spec:
+      project: default
+      source:
+        path: deploy/helm/app
+        repoURL: 'https://github.com/trevorbox/gitops-example-monorepo-go.git'
+        targetRevision: >-
+          {{ printf "{{targetRevision}}" }}
+        helm:
+          valueFiles:
+            - {{ printf "values-{{env}}.yaml" }}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: {{ printf "hr-echo-{{env}}" }}

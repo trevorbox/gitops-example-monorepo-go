@@ -45,6 +45,30 @@ example ArgoCD CR spec.rbac snippet:
 helm upgrade -i cicd setup/helm/argocd/ -n ${argo_namespace} --create-namespace
 ```
 
+## deploy applicationset
+
+```sh
+# dev cluster
+helm upgrade -i applicationset-hr-echo argocd/helm/applicationset/ -n ${argo_namespace} \
+  -f argocd/helm/applicationset/values-cluster-dev.yaml
+```
+
+OR
+
+```sh
+# stage cluster
+helm upgrade -i applicationset-hr-echo argocd/helm/applicationset/ -n ${argo_namespace} \
+  -f argocd/helm/applicationset/values-cluster-stage.yaml
+```
+
+OR
+
+```sh
+# prod cluster
+helm upgrade -i applicationset-hr-echo argocd/helm/applicationset/ -n ${argo_namespace} \
+  -f argocd/helm/applicationset/values-cluster-prod.yaml
+```
+
 ## deploy rootapp
 
 ![ArgoCD Root Application](.pics/argocd-rootapp.png)
