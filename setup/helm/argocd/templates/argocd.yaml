@@ -3,6 +3,7 @@ kind: ArgoCD
 metadata:
   name: argocd
 spec:
+  applicationSet: {}
   server:
     autoscale:
       enabled: false

@@ -25,4 +25,9 @@ spec:
             - {{ printf "values-{{env}}.yaml" }}
       destination:
         server: https://kubernetes.default.svc
-        namespace: {{ printf "hr-echo-{{env}}" }}
+        namespace: >-
+          {{ printf "hr-echo-{{env}}" }}
+      syncPolicy:
+        automated: 
+          prune: true
+          selfHeal: true
