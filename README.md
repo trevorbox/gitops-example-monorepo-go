@@ -39,6 +39,15 @@ example ArgoCD CR spec.rbac snippet:
     scopes: '[groups]'
 ```
 
+### argocd rollouts install
+
+To test out cluster-scoped ArgoCD Rollouts use the following to install...
+
+```sh
+kubectl create namespace argo-rollouts
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+```
+
 ### deploy argocd
 
 ```sh
@@ -103,6 +112,10 @@ addFinalizer: true
 ```
 
 After the push, you must wait for the ApplicationSet to reconcile (3 minutes) or use a [Git Webhook](https://argocd-applicationset.readthedocs.io/en/stable/Generators-Git/#webhook-configuration) to force the sync if using a supported Git provider (see docs for how to configure GitHub webhook).
+
+## applicationset webhook
+
+A [Git Webhook](https://argocd-applicationset.readthedocs.io/en/stable/Generators-Git/#webhook-configuration) can be used to force ApplicationSet syncing on commits if using a supported Git provider (see docs for how to configure GitHub webhook).
 
 Webhook route creation and secret creation notes...
 
@@ -208,15 +221,6 @@ for i in "${envs[@]}"; do ns=${org}-${context}-${i} && oc delete project ${ns}; 
 ```
 
 ## argocd rollouts
-
-### argocd rollouts install
-
-To test out cluster-scoped ArgoCD Rollouts use the following to install ...
-
-```sh
-kubectl create namespace argo-rollouts
-kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
-```
 
 ### argocd rollouts cli plugin install
 
