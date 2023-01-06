@@ -47,6 +47,8 @@ helm upgrade -i cicd setup/helm/argocd/ -n ${argo_namespace} --create-namespace
 
 ## deploy applicationset
 
+Deploy either the cluster dev, stage, or prod applicationset. This demonstrates deploying the same applicationset for different clusters (although we are demonstrating with only one) with different namespaces (environments) for each context.
+
 ```sh
 # dev cluster
 helm upgrade -i applicationset-hr-echo argocd/helm/applicationset/ -n ${argo_namespace} \
@@ -69,26 +71,35 @@ helm upgrade -i applicationset-hr-echo argocd/helm/applicationset/ -n ${argo_nam
   -f argocd/helm/applicationset/values-cluster-prod.yaml
 ```
 
-## deploy rootapp
+In a real-world scenario, development on the monorepo would require branching from the `main` branch but also updating an ApplicationSet cluster/namespace config file in the `main` branch to point to a feature branch.
 
-![ArgoCD Root Application](.pics/argocd-rootapp.png)
+By using the [Git Generator](https://argocd-applicationset.readthedocs.io/en/stable/Generators-Git/) type to generate Applications from the ApplicationSet, we can simply modify configuration files in our monorepo to change the parameters passed to Applications.
+
+The folder structure for these parameters files corresponds to a cluster with one or more namespaces.
 
 ```sh
-# dev cluster rootapp
-helm upgrade -i rootapp argocd/helm/rootapp/ -n ${argo_namespace} \
-  --set org=${org} \
-  --set context=${context} \
-  -f argocd/helm/rootapp/values-cluster-dev.yaml
-# stage cluster rootapp
-helm upgrade -i rootapp argocd/helm/rootapp/ -n ${argo_namespace} \
-  --set org=${org} \
-  --set context=${context} \
-  -f argocd/helm/rootapp/values-cluster-stage.yaml
-# prod cluster rootapp
-helm upgrade -i rootapp argocd/helm/rootapp/ -n ${argo_namespace} \
-  --set org=${org} \
-  --set context=${context} \
-  -f argocd/helm/rootapp/values-cluster-prod.yaml
+[tbox@fedora gitops-example-monorepo-go]$ tree argocd/clusters/
+argocd/clusters/
+├── dev
+│   └── namespaces
+│       ├── build.yaml
+│       └── dev.yaml
+├── prod
+│   └── namespaces
+│       └── prod.yaml
+└── stage
+    └── namespaces
+        ├── perf.yaml
+        └── qa.yaml
+```
+
+We can then modify the Application parameters to sync with the desired branch by changing the yaml file in the `main` branch.
+
+```sh
+[tbox@fedora gitops-example-monorepo-go]$ cat argocd/clusters/dev/namespaces/dev.yaml 
+env: dev
+targetRevision: feature/feature1 # change this back to main when the feature branch is merged back to main on the main branch
+addFinalizer: true
 ```
 
 ## deploy build pipeline
