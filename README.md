@@ -102,7 +102,15 @@ targetRevision: 'feature/feature1' # change this back to main when the feature b
 addFinalizer: true
 ```
 
-After the push, you must wait for the ApplicationSet to reconcile.
+After the push, you must wait for the ApplicationSet to reconcile (3 minutes) or use a [Git Webhook](https://argocd-applicationset.readthedocs.io/en/stable/Generators-Git/#webhook-configuration) to force the sync if using a supported Git provider (see docs for how to configure GitHub webhook).
+
+Webhook route creation and secret creation notes...
+
+```sh
+oc create route edge argocd-applicationset-controller --service=argocd-applicationset-controller --port=webhook -n ${argo_namespace}
+oc patch secret argocd-secret -p "{\"stringData\":{\"webhook.github.secret\": \"${mywebhooksecret}\"}}" -n ${argo_namespace}
+oc rollout restart deploy argocd-applicationset-controller -n ${argo_namespace}
+```
 
 ## (optional) deploy rootapp
 
