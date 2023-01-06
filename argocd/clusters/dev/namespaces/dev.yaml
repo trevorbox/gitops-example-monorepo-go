@@ -1,3 +1,3 @@
 env: dev
-targetRevision: 'feature/feature1'
+targetRevision: main # 'feature/feature1'
 addFinalizer: true

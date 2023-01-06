@@ -98,8 +98,34 @@ We can then modify the Application parameters to sync with the desired branch by
 ```sh
 [tbox@fedora gitops-example-monorepo-go]$ cat argocd/clusters/dev/namespaces/dev.yaml 
 env: dev
-targetRevision: feature/feature1 # change this back to main when the feature branch is merged back to main on the main branch
+targetRevision: 'feature/feature1' # change this back to main when the feature branch is merged back to main on the main branch
 addFinalizer: true
+```
+
+After the push, you must wait for the ApplicationSet to reconcile.
+
+## (optional) deploy rootapp
+
+The rootapp can be used instead of the ApplicationSet if desired. A benfit with this approach is quickly forcing a sync from the rootapp instead of having to wait for the ApplicationSet to reconcile.
+
+![ArgoCD Root Application](.pics/argocd-rootapp.png)
+
+```sh
+# dev cluster rootapp
+helm upgrade -i rootapp argocd/helm/rootapp/ -n ${argo_namespace} \
+  --set org=${org} \
+  --set context=${context} \
+  -f argocd/helm/rootapp/values-cluster-dev.yaml
+# stage cluster rootapp
+helm upgrade -i rootapp argocd/helm/rootapp/ -n ${argo_namespace} \
+  --set org=${org} \
+  --set context=${context} \
+  -f argocd/helm/rootapp/values-cluster-stage.yaml
+# prod cluster rootapp
+helm upgrade -i rootapp argocd/helm/rootapp/ -n ${argo_namespace} \
+  --set org=${org} \
+  --set context=${context} \
+  -f argocd/helm/rootapp/values-cluster-prod.yaml
 ```
 
 ## deploy build pipeline
