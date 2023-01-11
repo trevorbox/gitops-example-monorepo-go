@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: monorepo-pvc
+  name: iac-pvc
 spec:
   accessModes:
     - ReadWriteOnce

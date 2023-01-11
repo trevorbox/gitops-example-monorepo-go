@@ -48,10 +48,10 @@ spec:
     value: ${BASE_IMAGE_REPOSITORY}
   - name: base-image-tag
     value: ${BASE_IMAGE_TAG}
-  - name: monorepo-git-url
-    value: ${MONOREPO_GIT_URL}
-  - name: monorepo-git-revision
-    value: ${MONOREPO_GIT_REVISION}
+  - name: iac-git-url
+    value: ${IAC_GIT_URL}
+  - name: iac-git-revision
+    value: ${IAC_GIT_REVISION}
   - name: files
     value: ${FILES}
   - name: application-names
@@ -60,9 +60,9 @@ spec:
   - name: shared-workspace
     persistentVolumeClaim:
       claimName: ${SHARED_WORKSPACE_PVC_NAME}
-  - name: monorepo-workspace
+  - name: iac-workspace
     persistentVolumeClaim:
-      claimName: ${MONOREPO_WORKSPACE_PVC_NAME}
+      claimName: ${IAC_WORKSPACE_PVC_NAME}
   - name: ssh-creds
     secret:
       secretName: ${SSH_CREDENTIALS_SECRET_NAME}

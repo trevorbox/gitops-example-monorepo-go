@@ -5,7 +5,7 @@ metadata:
 spec:
   generators:
     - git:
-        repoURL: 'https://github.com/trevorbox/gitops-example-monorepo-go.git'
+        repoURL: 'https://github.com/trevorbox/gitops-example-iac-go.git'
         revision: main
         files:
           - path: {{ printf "argocd/clusters/%s/namespaces/*.yaml" .Values.cluster.name }}
@@ -17,7 +17,7 @@ spec:
       project: default
       source:
         path: deploy/helm/app
-        repoURL: 'https://github.com/trevorbox/gitops-example-monorepo-go.git'
+        repoURL: 'https://github.com/trevorbox/gitops-example-iac-go.git'
         targetRevision: >-
           {{ printf "{{targetRevision}}" }}
         helm:

@@ -17,7 +17,7 @@ spec:
     - name: org.opencontainers.image.description
       value: "An image to create a new PipelineRun when latest builder or base images are updated"
     - name: org.opencontainers.image.source
-      value: "https://github.com/trevorbox/gitops-example-monorepo-go.git"
+      value: "https://github.com/trevorbox/gitops-example-iac-go.git"
     - name: org.opencontainers.image.revision
       value: "main"
     - name: org.opencontainers.image.authors
@@ -37,7 +37,7 @@ spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/trevorbox/gitops-example-monorepo-go.git'
+      uri: 'https://github.com/trevorbox/gitops-example-iac-go.git'
     contextDir: pipelinerun-imagechange-go-app
   runPolicy: Serial
   triggers:

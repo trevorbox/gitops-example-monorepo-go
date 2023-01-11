@@ -26,9 +26,9 @@ spec:
     value: registry.access.redhat.com/ubi9/ubi-micro
   - name: base-image-tag
     value: latest
-  - name: monorepo-git-url
-    value: git@github.com:trevorbox/gitops-example-monorepo-go.git
-  - name: monorepo-git-revision
+  - name: iac-git-url
+    value: git@github.com:trevorbox/gitops-example-iac-go.git
+  - name: iac-git-revision
     value: main
   - name: files
     value:
@@ -42,9 +42,9 @@ spec:
   - name: shared-workspace
     persistentVolumeClaim:
       claimName: source-pvc
-  - name: monorepo-workspace
+  - name: iac-workspace
     persistentVolumeClaim:
-      claimName: monorepo-pvc
+      claimName: iac-pvc
   - name: ssh-creds
     secret:
       secretName: my-ssh-credentials

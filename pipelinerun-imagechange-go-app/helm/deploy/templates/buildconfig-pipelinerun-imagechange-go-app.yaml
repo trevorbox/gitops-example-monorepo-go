@@ -32,9 +32,9 @@ spec:
         value: registry.access.redhat.com/ubi9/ubi-micro
       - name: BASE_IMAGE_TAG
         value: latest
-      - name: MONOREPO_GIT_URL
-        value: git@github.com:trevorbox/gitops-example-monorepo-go.git
-      - name: MONOREPO_GIT_REVISION
+      - name: IAC_GIT_URL
+        value: git@github.com:trevorbox/gitops-example-iac-go.git
+      - name: IAC_GIT_REVISION
         value: main
       - name: FILES
         value: "[\"./deploy/helm/app/values-build.yaml\", \"./deploy/helm/app/values-dev.yaml\"]"
@@ -42,8 +42,8 @@ spec:
         value: "[\"hr-echo-dev\", \"hr-echo-build\"]"
       - name: SHARED_WORKSPACE_PVC_NAME
         value: source-pvc
-      - name: MONOREPO_WORKSPACE_PVC_NAME
-        value: monorepo-pvc
+      - name: IAC_WORKSPACE_PVC_NAME
+        value: iac-pvc
       - name: SSH_CREDENTIALS_SECRET_NAME
         value: my-ssh-credentials
       from:

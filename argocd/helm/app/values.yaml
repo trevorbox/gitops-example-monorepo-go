@@ -7,5 +7,5 @@ context: go-app
 defaults:
   source:
     path: deploy/helm/app
-    repoURL: 'https://github.com/trevorbox/gitops-example-monorepo-go.git'
+    repoURL: 'https://github.com/trevorbox/gitops-example-iac-go.git'
     targetRevision: main

@@ -5,7 +5,7 @@ metadata:
 spec:
   workspaces:
   - name: shared-workspace
-  - name: monorepo-workspace
+  - name: iac-workspace
   - name: ssh-creds
   params:
   - name: git-url
@@ -37,15 +37,15 @@ spec:
     type: string
     description: The base image tag
     default: latest
-  - name: monorepo-git-url
+  - name: iac-git-url
     type: string
-    description: url of the git repo for the code of the monorepo
-  - name: monorepo-git-revision
+    description: url of the git repo for the code of the iac
+  - name: iac-git-revision
     type: string
-    description: revision to be used from repo of the code of the monorepo
+    description: revision to be used from repo of the code of the iac
   - name: files
     type: array
-    description: A list of files to update using yq in the monorepo
+    description: A list of files to update using yq in the iac
   - name: application-names
     type: array
     description: A list of applications for argocd to sync 
@@ -138,20 +138,20 @@ spec:
       workspace: shared-workspace
     runAfter:
     - build-image
-  - name: fetch-monorepo
+  - name: fetch-iac
     taskRef:
       name: git-clone
       kind: ClusterTask
     workspaces:
     - name: output
-      workspace: monorepo-workspace
+      workspace: iac-workspace
     - name: ssh-directory
       workspace: ssh-creds
     params:
       - name: url
-        value: "$(params.monorepo-git-url)"
+        value: "$(params.iac-git-url)"
       - name: revision
-        value: "$(params.monorepo-git-revision)"
+        value: "$(params.iac-git-revision)"
       - name: subdirectory
         value: ""
       - name: deleteExisting
@@ -162,22 +162,22 @@ spec:
     taskRef:
       name: yq
     runAfter:
-      - fetch-monorepo
+      - fetch-iac
     workspaces:
       - name: source
-        workspace: monorepo-workspace
+        workspace: iac-workspace
     params:
       - name: files
         value: ["$(params.files[*])"]
       - name: expression
         value: (.image.tag="v$(tasks.image-util.results.next-prerelease)"),(.image.repository="$(params.IMAGE)")
-  - name: update-monorepo
+  - name: update-iac
     taskRef:
       name: git-cli
       kind: ClusterTask
     workspaces:
     - name: source
-      workspace: monorepo-workspace
+      workspace: iac-workspace
     - name: ssh-directory
       workspace: ssh-creds
     params:
@@ -187,8 +187,8 @@ spec:
         value: trevorjbox@gmail.com
       - name: GIT_SCRIPT
         value: |
-          git commit -am "update-monorepo v$(tasks.image-util.results.next-prerelease)"
-          git push origin HEAD:"$(params.monorepo-git-revision)"
+          git commit -am "update-iac v$(tasks.image-util.results.next-prerelease)"
+          git push origin HEAD:"$(params.iac-git-revision)"
           chmod -R g+w .git
     runAfter:
       - yq-replace
@@ -199,8 +199,8 @@ spec:
       - name: application-names
         value: ["$(params.application-names[*])"]
       - name: revision
-        value: "$(params.monorepo-git-revision)"
+        value: "$(params.iac-git-revision)"
       - name: argocd-version
         value: v2.4.5
     runAfter:
-      - update-monorepo
+      - update-iac

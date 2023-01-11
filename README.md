@@ -1,6 +1,6 @@
-# gitops-example-monorepo-go
+# gitops-example-iac-go
 
-An example infrastructure as code (IAC) monorepo to house gitops, pipeline, and deployment source code used to build and deploy an [example go application](https://github.com/trevorbox/s2i/tree/master/go).
+An example infrastructure as code (IAC) repo to house gitops, pipeline, and deployment source code used to build and deploy an [example go application](https://github.com/trevorbox/s2i/tree/master/go).
 
 ## setup
 
@@ -80,14 +80,14 @@ helm upgrade -i applicationset-hr-echo argocd/helm/applicationset/ -n ${argo_nam
   -f argocd/helm/applicationset/values-cluster-prod.yaml
 ```
 
-In a real-world scenario, development on the monorepo would require branching from the `main` branch but also updating an ApplicationSet cluster/namespace config file in the `main` branch to point to a feature branch.
+In a real-world scenario, development may require branching from the `main` branch but also updating an ApplicationSet cluster/namespace config file in the `main` branch to point to a feature branch.
 
-By using the [Git Generator](https://argocd-applicationset.readthedocs.io/en/stable/Generators-Git/) type to generate Applications from the ApplicationSet, we can simply modify configuration files in our monorepo to change the parameters passed to Applications.
+By using the [Git Generator](https://argocd-applicationset.readthedocs.io/en/stable/Generators-Git/) type to generate Applications from the ApplicationSet, we can simply modify configuration files in our IAC repo to change the parameters passed to Applications.
 
 The folder structure for these parameters files corresponds to a cluster with one or more namespaces.
 
 ```sh
-[tbox@fedora gitops-example-monorepo-go]$ tree argocd/clusters/
+[tbox@fedora gitops-example-iac-go]$ tree argocd/clusters/
 argocd/clusters/
 ├── dev
 │   └── namespaces
@@ -105,7 +105,7 @@ argocd/clusters/
 We can then modify the Application parameters to sync with the desired branch by changing the yaml file in the `main` branch.
 
 ```sh
-[tbox@fedora gitops-example-monorepo-go]$ cat argocd/clusters/dev/namespaces/dev.yaml 
+[tbox@fedora gitops-example-iac-go]$ cat argocd/clusters/dev/namespaces/dev.yaml 
 env: dev
 targetRevision: 'feature/feature1' # change this back to main when the feature branch is merged back to main on the main branch
 addFinalizer: true
@@ -171,7 +171,7 @@ helm upgrade -i build-and-deploy-go-app-pipeline pipelines/helm/build -n ${build
 
 ## build image-util
 
-We need to create our own utilitly image for the pipeline to inspect the next semver from remote registries, use the yq tool to update yaml files in a monorepo and setup variables like base/builder image digest values.
+We need to create our own utilitly image for the pipeline to inspect the next semver from remote registries, use the yq tool to update yaml files in an IAC repo and setup variables like base/builder image digest values.
 
 > Note: make the image publicly accessible in quay.io after it is pushed (if needed)
 
@@ -228,12 +228,12 @@ See <https://argo-rollouts.readthedocs.io/en/stable/installation/#kubectl-plugin
 
 ### argocd rollouts blue/green test
 
-The deployment chart for the application has an optional flag to use ArgoCD Rollouts instead of Deployments. You will need to commit a change to the desired values file in this monorepo's main branch.
+The deployment chart for the application has an optional flag to use ArgoCD Rollouts instead of Deployments. You will need to commit a change to the desired values file in this IAC repo's main branch.
 
 for example...
 
 ```sh
-[tbox@fedora gitops-example-monorepo-go]$ cat deploy/helm/app/values-dev.yaml 
+[tbox@fedora gitops-example-iac-go]$ cat deploy/helm/app/values-dev.yaml 
 image:
   repository: quay.io/trevorbox/go-app
   # Overrides the image tag whose default is the chart appVersion.
@@ -246,7 +246,7 @@ The Rollout uses a blue/green strategy and runs a prePromotionAnalysis k8s Job b
 example successful rollout after pipeline rebuild...
 
 ```sh
-[tbox@fedora gitops-example-monorepo-go]$ kubectl argo rollouts get rollouts hr-echo-dev-app -n hr-echo-dev
+[tbox@fedora gitops-example-iac-go]$ kubectl argo rollouts get rollouts hr-echo-dev-app -n hr-echo-dev
 Name:            hr-echo-dev-app
 Namespace:       hr-echo-dev
 Status:          ✔ Healthy
@@ -273,7 +273,7 @@ NAME                                                          KIND         STATU
 example failure (AnalysisRun Job failure by changing to the [always-fail](./deploy/helm/app/templates/rollout/analysistemplate-always-fail.yaml) AnalysisTemplate)...
 
 ```sh
-[tbox@fedora gitops-example-monorepo-go]$ kubectl argo rollouts get rollouts hr-echo-dev-app -n hr-echo-dev
+[tbox@fedora gitops-example-iac-go]$ kubectl argo rollouts get rollouts hr-echo-dev-app -n hr-echo-dev
 Name:            hr-echo-dev-app
 Namespace:       hr-echo-dev
 Status:          ✖ Degraded
